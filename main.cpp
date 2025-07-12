@@ -3,17 +3,23 @@
 #include <cassert>
 
 template <typename... Ts>
-class custom_tie
+class custom_tie_
 {
       std::tuple<Ts&...> stored;
 public:
-      custom_tie(Ts&... args): stored(args...) {};
-      int operator=(const std::tuple<Ts...> &t)
+      explicit custom_tie_(Ts&... args): stored(args...) {};
+      custom_tie_& operator=(const std::tuple<Ts...> &t)
       {
           stored = t;
-          return 0;
+          return *this;
       }
 };
+
+template <typename... Ts>
+auto custom_tie(Ts&... args) 
+{
+    return custom_tie_<Ts...>(args...);
+}
 
 auto getPerson() {
  const std::string name = "Petia";

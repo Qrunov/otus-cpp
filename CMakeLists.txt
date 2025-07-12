@@ -10,7 +10,7 @@ configure_file(version.h.in version.h)
 add_executable(tuple main.cpp)
 
 set_target_properties(tuple PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
 )
 
