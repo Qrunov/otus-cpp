@@ -5,7 +5,7 @@ on:
     branches:
       - master
       - feature/github_actions
-
+      - ex2/tuple
 jobs:
   build:
     runs-on: ubuntu-latest
