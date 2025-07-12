@@ -30,6 +30,5 @@ public:
         input_error,
         range_error
     };
-
     static tuple<Error_code, vector<ip>> parseStream(istream &);
 };
