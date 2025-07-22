@@ -7,18 +7,18 @@ project(tuple VERSION ${PROJECT_VESRION})
 
 configure_file(version.h.in version.h)
 
-add_executable(tuple main.cpp)
+add_executable(alloc main.cpp)
 
-set_target_properties(tuple PROPERTIES
+set_target_properties(alloc PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
 )
 
-    target_compile_options(tuple PRIVATE
-        -Wall -Wextra -pedantic -Werror
+    target_compile_options(alloc PRIVATE
+        -Wall -Wextra -pedantic -Werror -Wno-pessimizing-move
     )
 
-install(TARGETS tuple RUNTIME DESTINATION bin)
+install(TARGETS alloc RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
