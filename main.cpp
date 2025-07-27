@@ -1,188 +1,194 @@
-#include <memory>
-#include <vector>
 #include <iostream>
-#include <cstddef>
+#include <type_traits>
+#include <string>
+#include <cstdint>
+#include <vector>
 #include <algorithm>
+#include <tuple>
 #include <list>
-#include <map>
-#include <string.h>
+#include <utility>
+
 
 using namespace std;
 
-template<typename T, size_t limit = 10 > 
-class allocator_t
+template<typename T,typename = void>
+struct IP
 {
-public:
-    using value_type = 	T;
-    using pointer    =  T*;
-    explicit allocator_t() {}
-    pointer allocate(size_t	n)
+    static void print_ip(T ip)
     {
-	pointer ret;
-	if (n > limit)
-	{
-	    ret = static_cast<pointer>(malloc(sizeof(T) * n));
-	    if (!ret)
-		throw bad_alloc();
-	    return ret;
-	}
-	if (!m_pool || m_index + limit > n)
-	{
-	    m_index = 0;
-	    auto new_shunk =  move(make_unique<T[]>(limit));
-	    m_pool = new_shunk.get();
-	    m_active.push_back(move(new_shunk));
-	}
-
-	ret = static_cast<pointer>(m_pool + m_index);
-	m_index += n;
-	return ret;
+	cout << "base print_ip";
     }
-    void deallocate(pointer p, size_t n)
-    {
-//	cout << "asking for deallocate " << n << endl;
-	if (n > limit)
-	    free(p);
-    }
-    template <typename U>
-    struct rebind {
-	using other = allocator_t<U, limit>;
-    };
-    private:
-	T*	m_pool{ nullptr };
-	int	m_index{ 0 };
-	list<unique_ptr<T[]>>	m_active;
-
-    bool	operator==(const allocator_t &a) const { return this -> m_pool == a.m_pool && this -> m_index != a.m_index; }
-    bool	operator!=(const allocator_t &a) const { return this -> m_pool != a.m_pool; }
-
 };
 
 
 
 
-
-template<typename T, typename Alloc = std::allocator<T>>
-class simple_vector
+template<typename T>
+struct IP<T, typename enable_if<is_integral<T>::value>::type>
 {
-public:
-//    explicit simple_vector(Alloc& a = Alloc()):m_a(a) {}
-    simple_vector() {}
-    simple_vector(size_t t) { reserve(t); }
-    template<typename IT>
-    class Iterator
-    {
-	IT*	pointer;
-	public:
-	    Iterator(IT* ptr): pointer(ptr) {}
-	    T& operator*() const { return *pointer; }
-	    Iterator& operator++() 
-	    { 
-		pointer++; 
-		return *this; 
-	    }
-	    bool operator!=(const Iterator &other) const { return pointer != other.pointer; }
-    };
+    static void print_ip(T ip){
+	uint8_t* arr = reinterpret_cast<uint8_t *>(&ip);
+	size_t size = sizeof(T);
+	for (int i = size - 1;i > 0;i--)
+	    cout << static_cast<int>(arr[i]) << ".";
+	cout << static_cast<uint>(arr[0]) << endl;
 
-    using value_type		=	T;
-    using reference		= 	T&;
-    using const_reference	=	const T&;
-    using iterator		= 	Iterator<T>;
-    using const_iterator	= 	const Iterator<T>;
-    using difference_type	= 	int;
-    using size_type		=	size_t;
-
-    iterator begin()	const	{ return iterator(m_array); }
-    iterator end()	const	{ return iterator(m_array + m_size); }
-
-    const_iterator cbegin()	const	{ return iterator(m_array); }
-    const_iterator cend()	const	{ return iterator(m_array + m_size); }
-
-
-    T&	operator[](size_t index)	const	{ return *(m_array + index); }
-
-    size_type	size()	const	{ return m_size; }
-    size_type	capacity()	const	{ return m_count; }
-    void	reserve( size_type new_capacity )
-    {
-	if (new_capacity > m_count)
-	{
-		T* new_array =  allocator_traits<Alloc>::allocate(m_a, new_capacity);
-		if (m_count)
-		{
-		    memcpy(new_array, m_array, m_count * sizeof(T));
-		    allocator_traits<Alloc>::deallocate(m_a, m_array, m_count);
-		}
-		m_array = new_array;
-		m_count = new_capacity;
-	}
     }
-    bool	empty()	const    { return (m_size == 0); }
-
-    void	clear() 
-    {
-    	if (m_count)
-	    allocator_traits<Alloc>::deallocate(m_a, m_array, m_count);
-	m_size = 0;
-    }
-
-
-    template <typename TT>
-    void	push_back( TT&& value )
-    {
-	if (m_size == m_count)
-		reserve(m_count ? m_count * 2 : 1);
-
-	m_array[ m_size ] = value;
-	m_size++;
-    }
-
-    ~simple_vector() 
-    {	
-	if (m_count)
-	    allocator_traits<Alloc>::deallocate(m_a, m_array, m_count);
-    }
-private:
-    size_type	m_count{ 0 };
-    size_type	m_size{ 0 };
-    T*		m_array{ nullptr };
-    Alloc	m_a;
 };
 
 
-int main()
+template<typename T>
+struct IP<T, 
+    decltype(void(declval<ostream>() << *declval<T>().cbegin() << *declval<T>().cend()))>
 {
-    constexpr int 	high	= 10;
-    map<int,int>				base_map;
-    auto print_map = [](auto &map)
+    
+    static void print_ip(T ip)
     {
-        map[0] = 1;
-	map[1] = 1;
-	for (int i = 2;i < high;i++)
-	    map[i] = map[i - 1] * i;
-	for_each(map.cbegin(), map.cend(), [](auto &a){cout << a.first << " " << a.second << " ";});
-	cout << endl;
-    };
-    print_map(base_map);
+	
+	if (ip.cbegin() != ip.cend()) 
+	{
+	    cout << *ip.cbegin();
+	    for_each(ip.cbegin()++, ip.cend(), [](auto &val){cout << "." << val;});
+	}
+	cout <<  endl;
+    }
 
-    map<int,int,less<int>,allocator_t<int>>	alloc_map;
-
-    print_map(alloc_map);
+};
 
 
-    simple_vector<int>	s;
-    auto print_vector = [](auto &vector)
-    {
-	for (int i = 0; i < high;i++)
-	    vector.push_back(i);
+//1
+template <typename... Ts>
+struct AllSameType
+{
+	static constexpr bool value = true;
+};
 
-	for_each(vector.cbegin(), vector.cend(), [](auto &a){cout << a << " ";});
-        cout << endl;
-    };
-    print_vector(s);
+template<typename T, typename U,typename... Ts>
+struct AllSameType<T, U, Ts...>
+{
+	static constexpr bool value = is_same<T, U>::value && AllSameType<T, Ts...>::value;
+};
 
-    simple_vector<int, allocator_t<int>>	alloc_v;
-    print_vector(alloc_v);
-
-    return 0;
+template<typename... Ts>
+constexpr bool all_same_type(tuple<Ts...>	&)
+{
+	return  AllSameType<Ts...>::value;
 }
+//1
+
+//2
+// pretty-print a tuple
+template<class Ch, class Tr, class Tuple, std::size_t... Is>
+void print_tuple_impl(std::basic_ostream<Ch,Tr>& os,
+                      const Tuple& t,
+                      std::index_sequence<Is...>)
+{
+}
+
+template<class Ch, class Tr, class Tuple, std::size_t Is,std::size_t... Rest>
+void print_tuple_impl(std::basic_ostream<Ch,Tr>& os,
+                      const Tuple& t,
+                      std::index_sequence<Is, Rest...>)
+{
+    os << (Is == 0? "" : ".") << std::get<Is>(t);
+    print_tuple_impl(os, t, std::index_sequence<Rest...>{});    
+}
+ 
+template<class Ch, class Tr, class... Args>
+auto& operator<<(std::basic_ostream<Ch, Tr>& os,
+                 const std::tuple<Args...>& t)
+{
+    print_tuple_impl(os, t, std::index_sequence_for<Args...>{});
+    return os << endl;
+}
+//
+//2
+
+template<typename... T>
+struct is_tuple: false_type {};
+
+
+template<typename... T>
+struct is_tuple<tuple<T...>>: true_type {};
+
+template<typename T>
+    struct IP<T, typename enable_if<is_tuple<T>::value>::type>
+{
+    static	void	print_ip(T ip)
+    {
+	if (all_same_type(ip))
+	    cout << ip << endl;
+	else
+	    cout << "tuple contains no same elements"<< endl;
+    }
+};
+
+
+
+template<typename T>
+void print_ip(T ip)
+{
+    IP<T>::print_ip(ip);;
+}
+
+
+
+
+template<>
+void print_ip<string>(string ip)
+{
+    cout << ip << endl;
+}
+
+
+
+
+//template <typename... Ts>
+//void	print_ip(tuple<Ts...> &t)
+//{
+//    static_assert(all_same_type(t),"tuple contains no same types");
+//    cout << t;
+//}
+
+
+
+
+
+
+int main(int argc, char *argv[])
+{
+
+//    vector<int>	bb{1,44,66,2};
+//    IP<uint64_t>::print_ip(23232389787786876);
+//    IP<vector<int>>::print_ip(bb);
+
+
+//    decltype(declval<vector<int>>().cbegin(), declval<vector<int>>().cend()) a;
+//    cout << typeid(a).name() << endl;
+
+//    tuple<int,int>	a;
+//    static_assert(is_same<tuple_element<0, a>, tuple_element<1,a>>::value);
+
+
+//    int i,j;
+//    static_assert( is_same<decltype(i),decltype(j)>(),"tuple contains no same elements");
+
+    //static_assert(all_same_type(a),"not all the same");
+
+//    print_ip(a);
+//    print_ip("12376487326837683276483674"s);
+//    print_ip(bb);
+//    print_ip(8376482736);
+    print_ip( int8_t{-1} ); // 255 
+    print_ip( int16_t{0} ); // 0.0 
+    print_ip( int32_t{2130706433} ); // 127.0.0.1 
+    print_ip( int64_t{8875824491850138409} );// 123.45.67.89.101.112.131.41 
+    print_ip( std::string{"Hello, World!"} ); // Hello, World! 
+    print_ip( std::vector<int>{100, 200, 300, 400} ); // 100.200.300.400 
+    print_ip( std::list<short>{400, 300, 200, 100} ); // 400.300.200.100 
+//    tuple<int,int,int,int> a{123, 456, 789, 0};
+    print_ip( std::make_tuple(123, 456, 789, 0) ); // 123.456.789.0
+    //print_ip( std::make_pair(1,2));
+//    print_ip( a ); // 123.456.789.0
+    return 0;
+} 

@@ -7,7 +7,7 @@ on:
     branches:
       - master
       - feature/github_actions
-      - ex3/alloc
+      - ex4/sfinae
 
 jobs:
   build-documentation:
