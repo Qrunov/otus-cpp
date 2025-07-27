@@ -79,11 +79,12 @@ constexpr bool all_same_type(tuple<Ts...>	&)
 //2
 // pretty-print a tuple
 template<class Ch, class Tr, class Tuple, std::size_t... Is>
-void print_tuple_impl(std::basic_ostream<Ch,Tr>& os,
-                      const Tuple& t,
+void print_tuple_impl(std::basic_ostream<Ch,Tr>&,
+                      const Tuple&,
                       std::index_sequence<Is...>)
 {
 }
+
 
 template<class Ch, class Tr, class Tuple, std::size_t Is,std::size_t... Rest>
 void print_tuple_impl(std::basic_ostream<Ch,Tr>& os,
@@ -155,7 +156,7 @@ void print_ip<string>(string ip)
 
 
 
-int main(int argc, char *argv[])
+int main()
 {
 
 //    vector<int>	bb{1,44,66,2};
