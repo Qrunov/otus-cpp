@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - feature/github_actions
+      - ex4/sfinae
 
 jobs:
   build:
