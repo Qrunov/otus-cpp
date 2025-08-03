@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "ip_filter.h"
+using namespace std;
 
 TEST(Test1, TestsIpClass) {
     ip _ip;
@@ -46,6 +47,44 @@ TEST(Test7, TestsParser) {
 	ss << "192.168:3.7\t5\t66\n192.168.5.5\t555\t6767\n";
 	EXPECT_EQ(get<0>(ipParser::parseStream(ss)),ipParser::Error_code::input_error);
 }
+
+TEST(Test8, TestsParser) {
+    stringstream ss;
+	ss << "0.0.0.0\t5\t66\n255.255.255.255\t555\t6767\n";
+	EXPECT_EQ(get<0>(ipParser::parseStream(ss)),ipParser::Error_code::no_error);
+}
+
+TEST(Test9, TestsParser) {
+    stringstream ss;
+	ss << "192.168.1.1\t5\t66\n192.168.2.1\t555\t6767\n";
+	auto v = get<1>(ipParser::parseStream(ss));
+	EXPECT_TRUE(v[0] <= v[1]);
+}
+
+TEST(Test10, TestsParser) {
+    stringstream ss;
+	ss << "192.168.2.2\t5\t66\n192.168.2.2\t555\t6767\n";
+	auto v = get<1>(ipParser::parseStream(ss));
+	EXPECT_TRUE(v[0] <= v[1]);
+}
+
+TEST(Test11, TestsParser) {
+    stringstream ss;
+	ss << "254.168.2.2\t5\t66\n255.168.2.2\t555\t6767\n";
+	auto v = get<1>(ipParser::parseStream(ss));
+	EXPECT_TRUE(v[0] <= v[1]);
+}
+
+
+TEST(Test12, TestsParser) {
+    stringstream ss;
+	ss << "254.168.2.1\t5\t66\n250.168.2.2\t555\t6767\n";
+	auto v = get<1>(ipParser::parseStream(ss));
+	EXPECT_FALSE(v[0] <= v[1]);
+}
+
+
+
 
 
 int main(int argc, char **argv) {

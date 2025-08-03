@@ -1,13 +1,20 @@
 #include "ip_filter.h"
+using namespace std;
 
 int main(int, char **)
 {
 	auto [r, ipvec] = ipParser::parseStream(cin);
-	if (ipParser::Error_code::no_error != r)
+	if (ipParser::Error_code::input_error == r)
 	{
-		cerr << "parse error has occured";
+		cerr << "wrong input" << endl;
 		return -1;
 	}
+	else if (ipParser::Error_code::range_error == r)
+	{
+		cerr << "wrong ip address format";
+		return -1;
+	}
+
 	auto ip_cmp_gt = [](const ip &ip1, const ip &ip2)
 	{
 		return !(ip1 <= ip2);

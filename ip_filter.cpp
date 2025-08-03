@@ -1,4 +1,5 @@
 #include "ip_filter.h"
+using namespace std;
 /*
 ip::ip(const byte &f1, const byte &f2, const byte &f3, const byte &f4)
 {
@@ -32,14 +33,13 @@ bool ip::operator<=(const ip &c) const
 string ip::get_string() const
 {
 	auto *b = reinterpret_cast<const unsigned char *>(&n);
-	stringstream ss;
+	string str;
 	for (int i = sizeof(n) - 1; i >= 0;i-- )
 	{
-		ss << static_cast<uint>(b[i]); 
+		str += to_string(b[i]);
 		if (i)
-			ss << ".";
+			str += ".";
 	}
-	auto str = ss.str();
 	return str;
 }
 u_char ip::get_field(int i) const
@@ -52,8 +52,7 @@ u_char ip::get_field(int i) const
 tuple<ipParser::Error_code, vector<ip>> ipParser::parseStream(istream &ssource)
 {
 	regex pat{"^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\t\\w{1,}\t\\w{1,}"};
-	//regex pat{"^(\\d{1,3}).(\\d{1,3}).(\\d{1,3}).(\\d{1,3})\t\\w{1,}\t\\w{1,}"};
-    vector<ip> ips;
+	vector<ip> ips;
 	Error_code result = Error_code::no_error;
 	for (string line; getline(ssource, line);)
 	{
@@ -78,8 +77,8 @@ tuple<ipParser::Error_code, vector<ip>> ipParser::parseStream(istream &ssource)
 			}
 			if (Error_code::no_error != result)
 				break;
-           ips.push_back(last_ip);
-        }
+			ips.push_back(last_ip);
+    		}
 		else
 		{
 			result = Error_code::input_error;
