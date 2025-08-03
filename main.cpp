@@ -53,8 +53,8 @@ public:
 	int	m_index{ 0 };
 	list<unique_ptr<T[]>>	m_active;
 
-    bool	operator==(const allocator_t &a) const { return this -> m_pool == a.m_pool && this -> m_index != a.m_index; }
-    bool	operator!=(const allocator_t &a) const { return this -> m_pool != a.m_pool; }
+    bool	operator==(const allocator_t &a) const { return true; }
+    bool	operator!=(const allocator_t &a) const { return false; }
 
 };
 
