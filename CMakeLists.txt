@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
-project(Painter VERSION ${PROJECT_VESRION})
 
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
-set(PROJECT_VESRION 0.0.${PATCH_VERSION})
+set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 
+project(Painter VERSION ${PROJECT_VERSION})
 # Настройка стандарта C++
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -53,6 +53,7 @@ add_executable(painter
 target_compile_options(painter PRIVATE
     -Wall -Wextra -pedantic -Werror
 )
+install(TARGETS painter RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
