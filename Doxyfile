@@ -2861,3 +2861,13 @@ MSCGEN_TOOL            =
 # command).
 
 MSCFILE_DIRS           =
+
+
+QUIET = NO  
+WARNINGS = YES  
+WARN_IF_UNDOCUMENTED = YES  
+WARN_IF_DOC_ERROR = YES  
+
+# Log all messages (for debugging)  
+ALWAYS_DETAILED_SEC = YES  
+EXTRACT_ALL = YES 
