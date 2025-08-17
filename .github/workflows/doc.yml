@@ -22,6 +22,8 @@ jobs:
       with:
         doxyfile-path: ./Doxyfile
         working-directory: .
+      env:  
+	VERBOSE: "YES"  # Options: "YES" (verbose), "NO" (quiet) 
     
     # Deploy the HTML documentation to GitHub Pages
     - name: GH Pages Deployment
