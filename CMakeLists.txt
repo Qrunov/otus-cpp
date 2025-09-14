@@ -63,7 +63,7 @@ else ()
     endif()
 endif()
 
-install(TARGETS RUNTIME DESTINATION bin)
+install(TARGETS bulk RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
