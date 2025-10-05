@@ -3,23 +3,32 @@ cmake_minimum_required(VERSION 3.12)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 
-project(bulk VERSION ${PROJECT_VERSION})
+project(bayan VERSION ${PROJECT_VERSION})
 
 option(WITH_GOOGLE_TEST "Whether to build google test" ON)
 
 configure_file(version.h.in version.h)
 
-add_executable(bulk main.cc consoleDestination.cc fileDestination.cc observer.cc collector.cc source.cc parser.cc)
+add_executable(bayan 
+	bayan.cc 
+	fileRepresentation.cc 
+	hasher.cc
+	filterDirPath.cc)
 
 
-set_target_properties(bulk bulk PROPERTIES
+set_target_properties(bayan PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(bulk
+target_include_directories(bayan
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
+
+    target_link_libraries(
+        bayan
+	boost_program_options
+    )
 
 if(WITH_GOOGLE_TEST)
     # Ищем Google Test
@@ -27,43 +36,43 @@ if(WITH_GOOGLE_TEST)
 
     # Создаём тестовый исполняемый файл
     add_executable(
-      test_bulk
+      test_bayan
       test.cc
-	parser.cc
-)
+      fileRepresentation.cc 
+      hasher.cc)
 
-    set_target_properties(test_bulk PROPERTIES
+    set_target_properties(test_bayan PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON
     )
     # Подключаем gtest
     target_link_libraries(
-        test_bulk
-    	GTest::GTest GTest::Main
+        test_bayan
+	GTest::GTest GTest::Main
     )
 endif()
 
 if (MSVC)
-    target_compile_options(bulk PRIVATE
+    target_compile_options(bayan PRIVATE
         /W4
     )
     if(WITH_BOOST_TEST)
-        target_compile_options(test_bulk PRIVATE
+        target_compile_options(test_bayan PRIVATE
             /W4
         )
     endif()
 else ()
-    target_compile_options(bulk PRIVATE
+    target_compile_options(bayan PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
     if(WITH_GOOGLE_TEST)
-        target_compile_options(test_bulk PRIVATE
+        target_compile_options(test_bayan PRIVATE
             -Wall -Wextra -pedantic -Werror
         )
     endif()
 endif()
 
-install(TARGETS bulk RUNTIME DESTINATION bin)
+install(TARGETS bayan RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
@@ -75,7 +84,6 @@ include(CPack)
 
 if(WITH_GOOGLE_TEST)
     enable_testing()
-    add_test(test_bulk test_bulk)
+    add_test(test_bayan test_bayan)
 endif()
-
 

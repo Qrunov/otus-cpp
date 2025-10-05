@@ -1,225 +1,117 @@
 #include <gtest/gtest.h>
-#include "parser.h"
+#include "fileRepresentation.h"
+// #include "mocRecursiveDirectoryIterator.h"
 using namespace std;
 
-class openCollector : public collectorInterface
-{
-public:
-    void beginBlock() override;
-    void endBlock() override;
-    void addCmd(const std::string &cmd) override;
-
-    bool beginBlockWasCalled;
-    bool endBlockWasCalled;
-    std::string lastCmd;
-};
-
-void openCollector::beginBlock()
-{
-    beginBlockWasCalled = true;
-}
-
-void openCollector::endBlock()
-{
-    endBlockWasCalled = true;
-}
-
-void openCollector::addCmd(const string &cmd)
-{
-    lastCmd = cmd;
-}
-
-class strstreamSource : public sourceInterface
-{
-public:
-    std::string getData() override;
-    bool wasFinished() override;
-    strstreamSource &operator<<(const std::string &str);
-    void clear();
-
-private:
-    std::stringstream data;
-};
-
-void strstreamSource::clear()
-{
-    data.str("");
-    data.clear();
-}
-
-string strstreamSource::getData()
-{
-    string str;
-    data >> str;
-    return str;
-}
-
-bool strstreamSource::wasFinished()
-{
-    return data.eof();
-}
-
-strstreamSource &strstreamSource::operator<<(const string &str)
-{
-    data << str;
-    return *this;
-}
-
-class TestParser : public ::testing::Test
+class TestFiles : public ::testing::Test
 {
 protected:
     void SetUp()
     {
-
-        a = make_shared<openCollector>();
-        source = make_shared<strstreamSource>();
     }
     void TearDown()
     {
     }
-    shared_ptr<openCollector> a;
-    shared_ptr<strstreamSource> source;
 };
 
-TEST_F(TestParser, TestsN1)
+using fm = class fileRepresentation<MockMapping, MockRegion>;
+
+TEST_F(TestFiles, Test1)
 {
-    strstreamSource &src = *source;
-    src << "cmd1";
-
-    cmdParser parser(a, 1);
-    parser.parseIt(source);
-
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, true);
-    EXPECT_EQ(a->lastCmd, "cmd1");
+    fm file1("/fake1", 100);
+    EXPECT_EQ(file1.size(), 100);
 }
 
-TEST_F(TestParser, TestsN2)
+TEST_F(TestFiles, Test2)
 {
-    strstreamSource &src = *source;
-    src << "cmd1";
-
-    cmdParser parser(a, 2);
-    parser.parseIt(source, false);
-
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, false);
-    EXPECT_EQ(a->lastCmd, "cmd1");
-
-    a->beginBlockWasCalled = false;
-    src.clear();
-
-    src << "cmd2";
-    parser.parseIt(source);
-
-    EXPECT_EQ(a->beginBlockWasCalled, false);
-    EXPECT_EQ(a->endBlockWasCalled, true);
-    EXPECT_EQ(a->lastCmd, "cmd2");
+    fm file1("/fake1", 100);
+    EXPECT_EQ(file1.fullPath(), string("/fake1"));
 }
 
-TEST_F(TestParser, TestsN3)
+TEST_F(TestFiles, TestSameFiles)
 {
-    strstreamSource &src = *source;
-    src << "cmd1";
-
-    cmdParser parser(a, 3);
-    parser.parseIt(source, false);
-
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, false);
-    EXPECT_EQ(a->lastCmd, "cmd1");
-
-    a->beginBlockWasCalled = false;
-    src.clear();
-
-    src << "cmd2";
-    parser.parseIt(source, false);
-
-    EXPECT_EQ(a->beginBlockWasCalled, false);
-    EXPECT_EQ(a->endBlockWasCalled, false);
-    EXPECT_EQ(a->lastCmd, "cmd2");
-
-    src.clear();
-    src << "cmd3";
-    parser.parseIt(source, false);
-
-    EXPECT_EQ(a->beginBlockWasCalled, false);
-    EXPECT_EQ(a->endBlockWasCalled, true);
-    EXPECT_EQ(a->lastCmd, "cmd3");
-    a->endBlockWasCalled = false;
-
-    src.clear();
-    src << "cmd4";
-    parser.parseIt(source, false);
-
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, false);
-    EXPECT_EQ(a->lastCmd, "cmd4");
+    fm file1("/aaaa1", 100);
+    fm file2("/bbbb1", 100);
+    EXPECT_EQ(file1 == file2, true);
 }
 
-TEST_F(TestParser, TestsBlockNoFilled)
+TEST_F(TestFiles, TestNotSameFiles)
 {
-    strstreamSource &src = *source;
-    src << "cmd1";
-
-    cmdParser parser(a, 3);
-    parser.parseIt(source);
-
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, true);
-    EXPECT_EQ(a->lastCmd, "cmd1");
+    fm file1("/aaaa1", 100);
+    fm file2("/bbbb2", 100);
+    EXPECT_EQ(file1 == file2, false);
 }
 
-TEST_F(TestParser, TestsDynamicBlock1)
+TEST_F(TestFiles, TestNotSameFiles2)
 {
-    strstreamSource &src = *source;
-    src << "{ cmd1 } cmd2";
-
-    cmdParser parser(a, 3);
-    parser.parseIt(source, false);
-
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, true);
-    EXPECT_EQ(a->lastCmd, "cmd2");
+    fm file1("/aaaa1", 100);
+    fm file2("/bbbb22131", 100);
+    EXPECT_EQ(file1 == file2, false);
 }
 
-TEST_F(TestParser, TestsDynamicBlockFollowsStatic)
+TEST_F(TestFiles, TestDifferentSizes)
 {
-    strstreamSource &src = *source;
-    src << "cmd1 {";
-
-    cmdParser parser(a, 3);
-    parser.parseIt(source, false);
-
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, true);
-    EXPECT_EQ(a->lastCmd, "cmd1");
+    fm file1("/aaaa1", 100);
+    fm file2("/bbbb1", 101);
+    ASSERT_EQ(file1 == file2, false);
 }
 
-TEST_F(TestParser, TestsInnerDynamicBlock)
+TEST_F(TestFiles, TestMinimalBlock)
 {
-    strstreamSource &src = *source;
-    src << "{ cmd1 { cmd2 } }"; //}} - interpretated as cmd
-
-    cmdParser parser(a, 3);
-    parser.parseIt(source);
-
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, true);
-    EXPECT_EQ(a->lastCmd, "cmd2");
+    fm file1("/aaaa1", 100, 1);
+    fm file2("/bbbb1", 100, 1);
+    EXPECT_EQ(file1 == file2, true);
 }
 
-TEST_F(TestParser, TestsDynamicBlockEndsOpened)
+TEST_F(TestFiles, TestMinimalBlockWithDiffirents)
 {
-    strstreamSource &src = *source;
-    src << "{ cmd1"; //}} - interpretated as cmd
+    fm file1("/aaaa13", 100, 1);
+    fm file2("/bbbb12", 100, 1);
+    EXPECT_EQ(file1 == file2, false);
+}
 
-    cmdParser parser(a, 3);
-    parser.parseIt(source);
+TEST_F(TestFiles, TestMediumBlock)
+{
+    fm file1("/aaaa11", 100, 10);
+    fm file2("/bbbb11", 100, 10);
+    EXPECT_EQ(file1 == file2, true);
+}
 
-    EXPECT_EQ(a->beginBlockWasCalled, true);
-    EXPECT_EQ(a->endBlockWasCalled, false);
-    EXPECT_EQ(a->lastCmd, "cmd1");
+TEST_F(TestFiles, TestMediumBlockWithDifferents)
+{
+    fm file1("/aaaa12", 100, 10);
+    fm file2("/bbbb11", 100, 10);
+    EXPECT_EQ(file1 == file2, false);
+}
+
+TEST_F(TestFiles, TestNonFirstBlocksDifferent)
+{
+    fm file1("/aaaa111111112111111111", 100, 1);
+    fm file2("/bbbb111111113111111111", 100, 1);
+    EXPECT_EQ(file1 == file2, false);
+}
+TEST_F(TestFiles, TestMD5Hash)
+{
+    auto h = hasherFactory::getInstance()->create("md5");
+    fm file1("/aaaa1", 100, 1, h);
+    fm file2("/bbbb1", 100, 1, h);
+    EXPECT_EQ(file1 == file2, true);
+}
+
+TEST_F(TestFiles, TestDifferentHash)
+{
+    auto h = hasherFactory::getInstance()->create("md5");
+    fm file1("/aaaa1", 100, 1);
+    fm file2("/bbbb1", 100, 1, h);
+    EXPECT_EQ(file1 == file2, false);
+}
+
+TEST_F(TestFiles, TestDifferentHash2)
+{
+    auto h = hasherFactory::getInstance()->create("md5");
+    fm file1("/aaaa1", 100, 512);
+    fm file2("/bbbb1", 100, 512, h);
+    EXPECT_EQ(file1 == file2, false);
 }
 
 int main(int argc, char **argv)

@@ -7,7 +7,7 @@ on:
     branches:
       - master
       - feature/github_actions
-      - ex7/bulk
+      - ex8/bayan
 
 jobs:
   build-documentation:
