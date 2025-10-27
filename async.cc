@@ -121,14 +121,14 @@ shared_ptr<queueHolder> queueHolder::m_instance;
 
 namespace async {
 
-atomic<handle_t>	seq{(handle_t)1};
+atomic<uint64_t>	seq{1};
 map<handle_t, shared_ptr<async_context>> connections;
 
 template <class Collector = collector>
 handle_t connect_t(size_t bulk)
 {
 
-    handle_t  newHandle = atomic_fetch_add(&seq, (uint32_t)1);
+    handle_t  newHandle = (handle_t)(seq.fetch_add(1));
 
     shared_ptr<async_context> p_con =  make_shared<async_context>();
     auto coll = make_shared<Collector>();
