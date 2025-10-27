@@ -3,21 +3,37 @@ cmake_minimum_required(VERSION 3.12)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 
-project(bulk VERSION ${PROJECT_VERSION})
+project(async VERSION ${PROJECT_VERSION})
 
 option(WITH_GOOGLE_TEST "Whether to build google test" ON)
 
 configure_file(version.h.in version.h)
 
-add_executable(bulk main.cc consoleDestination.cc fileDestination.cc observer.cc collector.cc source.cc parser.cc)
+add_executable(bulk_async main.cc)
 
+target_link_libraries(
+    bulk_async
+    pthread
+    async
+)
 
-set_target_properties(bulk bulk PROPERTIES
+add_library (async SHARED consoleDestination.cc fileDestination.cc wqDestination.cc observer.cc collector.cc source.cc parser.cc async.cc)
+
+set_target_properties(bulk_async PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(bulk
+set_target_properties(async PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+)
+
+target_include_directories(async
+    PRIVATE "${CMAKE_BINARY_DIR}"
+)
+
+target_include_directories(bulk_async
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
@@ -28,9 +44,7 @@ if(WITH_GOOGLE_TEST)
     # Создаём тестовый исполняемый файл
     add_executable(
       test_bulk
-      test.cc
-	parser.cc
-)
+      test.cc)
 
     set_target_properties(test_bulk PROPERTIES
         CXX_STANDARD 20
@@ -39,12 +53,13 @@ if(WITH_GOOGLE_TEST)
     # Подключаем gtest
     target_link_libraries(
         test_bulk
+	async
     	GTest::GTest GTest::Main
     )
 endif()
 
 if (MSVC)
-    target_compile_options(bulk PRIVATE
+    target_compile_options(async PRIVATE
         /W4
     )
     if(WITH_BOOST_TEST)
@@ -53,7 +68,7 @@ if (MSVC)
         )
     endif()
 else ()
-    target_compile_options(bulk PRIVATE
+    target_compile_options(async PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
     if(WITH_GOOGLE_TEST)
@@ -62,8 +77,9 @@ else ()
         )
     endif()
 endif()
+install (TARGETS async LIBRARY DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-install(TARGETS bulk RUNTIME DESTINATION bin)
+install(TARGETS bulk_async RUNTIME DESTINATION ${CMAKE_BINARY_OUTPUT_DIRECTORY})
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")

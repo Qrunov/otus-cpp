@@ -1,33 +1,8 @@
 #include <gtest/gtest.h>
 #include "parser.h"
+#include "opencollector.h"
+#include "async_test.h"
 using namespace std;
-
-class openCollector : public collectorInterface
-{
-public:
-    void beginBlock() override;
-    void endBlock() override;
-    void addCmd(const std::string &cmd) override;
-
-    bool beginBlockWasCalled;
-    bool endBlockWasCalled;
-    std::string lastCmd;
-};
-
-void openCollector::beginBlock()
-{
-    beginBlockWasCalled = true;
-}
-
-void openCollector::endBlock()
-{
-    endBlockWasCalled = true;
-}
-
-void openCollector::addCmd(const string &cmd)
-{
-    lastCmd = cmd;
-}
 
 class strstreamSource : public sourceInterface
 {
@@ -221,6 +196,85 @@ TEST_F(TestParser, TestsDynamicBlockEndsOpened)
     EXPECT_EQ(a->endBlockWasCalled, false);
     EXPECT_EQ(a->lastCmd, "cmd1");
 }
+
+TEST(Test, TestAsync1)
+{
+    async::handle_t h1 = async::connect_t<openCollector>(5);
+    async::disconnect(h1);
+    EXPECT_GT((uint64_t)h1, 0);
+}
+
+TEST(Test, TestAsync2)
+{
+    async::handle_t h1 = async::connect_t<openCollector>(5);
+    auto a = static_pointer_cast<openCollector>(async::getOpenCollector(h1));
+    string s = "cmd1";
+    async::receive(h1, s.c_str(), s.size());
+    async::receiveEof(h1);
+
+    EXPECT_EQ(a->beginBlockWasCalled, true);
+    EXPECT_EQ(a->endBlockWasCalled, true);
+    EXPECT_EQ(a->lastCmd, "cmd1");
+
+    async::disconnect(h1);
+
+}
+
+
+TEST(Test, TestAsync3)
+{
+    auto h1 = async::connect_t<openCollector>(5);
+    auto h2 = async::connect_t<openCollector>(3);
+
+    auto a1 = static_pointer_cast<openCollector>(async::getOpenCollector(h1));
+    auto a2 = static_pointer_cast<openCollector>(async::getOpenCollector(h2));
+
+    string s = "cmd1 cmd2 cmd3 cmd4";
+    async::receive(h1, s.c_str(), s.size());
+    async::receive(h2, s.c_str(), s.size());
+
+    EXPECT_EQ(a1->beginBlockWasCalled, true);
+    EXPECT_EQ(a1->endBlockWasCalled, false);
+    EXPECT_EQ(a1->lastCmd, "cmd4");
+
+
+    EXPECT_EQ(a2->beginBlockWasCalled, true);
+    EXPECT_EQ(a2->endBlockWasCalled, true);
+    EXPECT_EQ(a2->lastCmd, "cmd4");
+
+    async::disconnect(h1);
+    async::disconnect(h2);
+}
+
+
+TEST(Test, TestAsync4)
+{
+    auto h1 = async::connect_t<openCollector>(1);
+    auto h2 = async::connect_t<openCollector>(1);
+
+    auto a1 = static_pointer_cast<openCollector>(async::getOpenCollector(h1));
+    auto a2 = static_pointer_cast<openCollector>(async::getOpenCollector(h2));
+
+    string s[]{"cmd1", "cmd2", "cmd3", "cmd4"};
+    async::receive(h1, s[0].c_str(), s[0].size());
+    async::receive(h2, s[1].c_str(), s[1].size());
+
+    async::receive(h2, s[2].c_str(), s[2].size());
+    async::receive(h1, s[3].c_str(), s[3].size());
+
+    EXPECT_EQ(a1->beginBlockWasCalled, true);
+    EXPECT_EQ(a1->endBlockWasCalled, true);
+    EXPECT_EQ(a1->lastCmd, "cmd4");
+
+    EXPECT_EQ(a2->beginBlockWasCalled, true);
+    EXPECT_EQ(a2->endBlockWasCalled, true);
+    EXPECT_EQ(a2->lastCmd, "cmd3");
+
+    async::disconnect(h1);
+    async::disconnect(h2);
+}
+
+
 
 int main(int argc, char **argv)
 {

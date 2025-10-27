@@ -1,8 +1,6 @@
-#include "fileDestination.h"
-#include "consoleDestination.h"
-#include "collector.h"
-#include "source.h"
-#include "parser.h"
+#include "async.h"
+#include <unistd.h>
+
 
 using namespace std;
 
@@ -11,20 +9,15 @@ size_t N = 3;
 int main(int argc, const char *argv[])
 {
 
-    if (2 == argc)
-        N = strtoul(argv[1], 0, 10);
-
-    shared_ptr<consoleDestination> console = make_shared<consoleDestination>();
-    shared_ptr<fileDestination> files = make_shared<fileDestination>();
-
-    shared_ptr<collector> a = make_shared<collector>();
-    shared_ptr<grubFromCin> source = make_shared<grubFromCin>();
-    cmdParser parser(a, N);
-
-    a->registration(console);
-    a->registration(files);
-
-    parser.parseIt(source);
+    std::size_t bulk = 5;
+    auto h = async::connect(bulk);
+    auto h2 = async::connect(bulk);
+    async::receive(h, "1", 1);
+    async::receive(h2, "1\n", 2);
+    async::receive(h, "\n2\n3\n4\n5\n6\n{\na\n", 15);
+    async::receive(h, "b\nc\nd\n}\n89\n", 11);
+    async::disconnect(h);
+    async::disconnect(h2);
 
     return 0;
 }

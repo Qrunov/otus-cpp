@@ -1,11 +1,20 @@
 #include "fileDestination.h"
 #include <fstream>
 #include <iostream>
+#include <thread>
 
 using namespace std;
 void fileDestination::update(const block &b)
 {
-	string filename = to_string(b.time) + ".log";
+	if (b.time == last)
+	    counter++;
+	else
+	{
+	    counter = 0;
+	    last = b.time;
+	}
+	string filename = to_string(pthread_self()) + "_" + to_string(b.time) + "_" + to_string(counter) + ".log";
+//	string filename = to_string(b.time) + "_" + to_string(counter) + ".log";
 	fstream fout(filename, ios_base::out);
 	if (!fout.is_open())
 	{
