@@ -4,7 +4,7 @@
 #include <iostream>
 
 using namespace std;
-void wqDestination::update(const block &b)
+void wqDestination::update(const commandBlock &b)
 {
     if (!m_queue)
     {
@@ -12,6 +12,6 @@ void wqDestination::update(const block &b)
 	return;
     }
 
-    auto b_copy = make_shared<block>(b);
+    auto b_copy = make_shared<commandBlock>(b);
     m_queue -> put(b_copy);
 }

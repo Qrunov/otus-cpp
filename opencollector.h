@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-class openCollector : public collectorInterface
+class openCollector : public ICollector
 {
 public:
     void beginBlock() override;
@@ -15,19 +15,4 @@ public:
     bool endBlockWasCalled;
     std::string lastCmd;
 };
-
-void openCollector::beginBlock()
-{
-    beginBlockWasCalled = true;
-}
-
-void openCollector::endBlock()
-{
-    endBlockWasCalled = true;
-}
-
-void openCollector::addCmd(const std::string &cmd)
-{
-    lastCmd = cmd;
-}
 

@@ -3,26 +3,26 @@
 #include <list>
 #include <memory>
 
-struct block
+struct commandBlock
 {
     time_t time;
     std::list<std::string> cmd;
 };
 
-class sourceInterface
+class ISource
 {
 public:
     virtual std::string getData() = 0;
-    virtual bool wasFinished() = 0;
+    virtual bool wasFinished() const = 0;
 };
 
 class observer
 {
 public:
-    virtual void update(const block &) = 0;
+    virtual void update(const commandBlock &) = 0;
 };
 
-class collectorInterface
+class ICollector
 {
 public:
     virtual void beginBlock() = 0;
@@ -33,10 +33,10 @@ public:
 class subject
 {
 public:
-    void registration(std::shared_ptr<observer> ob);
+    void registration(const std::shared_ptr<observer>& ob);
 
 protected:
-    void notify(const block &b);
+    void notify(const commandBlock &b) const;
 
 private:
     std::list<std::shared_ptr<observer>> m_observer_list;

@@ -10,13 +10,18 @@
 class cmdParser
 {
 public:
-    explicit cmdParser(std::shared_ptr<collectorInterface> collector, std::size_t N) : m_N(N), m_collector(collector) {};
+    explicit cmdParser(std::shared_ptr<ICollector> collector, std::size_t N) : m_N(N), m_collector(collector) {};
 
-    bool parseIt(std::shared_ptr<sourceInterface> from, bool endPresumption = true);
+    void parseIt(std::shared_ptr<ISource> from, bool endPresumption = true);
+    
+    
+    void parseByString(const std::string&);
+    void parseEnd();
+
 
 private:
     std::size_t m_N;
-    std::shared_ptr<collectorInterface> m_collector;
+    std::shared_ptr<ICollector> m_collector;
     std::uint32_t counter{0};
     int dynamicBlockCounter{0};
 };

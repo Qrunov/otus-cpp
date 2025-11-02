@@ -4,5 +4,5 @@
 class consoleDestination : public observer
 {
 public:
-    void update(const block &b);
+    void update(const commandBlock &b);
 };

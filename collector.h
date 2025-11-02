@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-class collector : public collectorInterface, public subject
+class collector : public ICollector, public subject
 {
 public:
     void beginBlock() override;
@@ -14,5 +14,5 @@ public:
     void endBlock() override;
 
 private:
-    std::shared_ptr<block> currentBlock;
+    std::shared_ptr<commandBlock> currentBlock;
 };

@@ -5,25 +5,25 @@
 
 using namespace std;
 
-string grubFromCin::getData()
+string grubFromCin::getData() 
 {
     string ret;
     cin >> ret;
     return ret;
 }
 
-bool grubFromCin::wasFinished()
+bool grubFromCin::wasFinished() const
 {
     return cin.eof();
 }
 
-string grubFromString::getData()
+string grubFromString::getData() 
 {
     string ret;
     string_data >> ret;
     return ret;
 }
-bool   grubFromString::wasFinished()
+bool   grubFromString::wasFinished() const
 {
     return string_data.eof();
 }

@@ -5,7 +5,7 @@
 class fileDestination : public observer
 {
 public:
-    void update(const block &b);
+    void update(const commandBlock &b);
 private:
     int 	counter{0};
     time_t	last{0};

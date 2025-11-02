@@ -7,7 +7,7 @@ using namespace std;
 
 void collector::beginBlock()
 {
-    currentBlock = make_shared<block>();
+    currentBlock = make_shared<commandBlock>();
     currentBlock->time = std::chrono::system_clock::to_time_t(chrono::system_clock::now());
 }
 

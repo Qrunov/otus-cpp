@@ -4,7 +4,7 @@
 #include <thread>
 
 using namespace std;
-void fileDestination::update(const block &b)
+void fileDestination::update(const commandBlock &b)
 {
 	if (b.time == last)
 	    counter++;

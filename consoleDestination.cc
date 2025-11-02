@@ -4,7 +4,7 @@
 
 using namespace std;
 
-void consoleDestination::update(const block &b)
+void consoleDestination::update(const commandBlock &b)
 {
 	if (b.cmd.size())
 		cout << "bulk: ";

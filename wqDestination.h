@@ -6,13 +6,13 @@
 class wqDestination : public observer
 {
 public:
-    void update(const block &b) override;
+    void update(const commandBlock &b) override;
 
-    void setQueue(std::shared_ptr<workQueue<block>> queue)
+    void setQueue(std::shared_ptr<workQueue<commandBlock>> queue)
     {
 	m_queue = queue;
     }
 
 private:
-    std::shared_ptr<workQueue<block>>	m_queue;
+    std::shared_ptr<workQueue<commandBlock>>	m_queue;
 };
