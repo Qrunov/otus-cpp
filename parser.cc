@@ -15,50 +15,60 @@ void cmdParser::parseIt(shared_ptr<ISource> from, bool endPresumption)
 
 void cmdParser::parseByString(const std::string &cmd)
 {
+	unique_lock lock(m_lock, defer_lock);
+        if (m_threadSave)
+	    lock.lock();
+
 	if (cmd == "")
-		return;
+	    return;
+
+	if (m_next && cmd[0] != '{' && !m_dynamicBlockCounter)
+	{
+	    m_next -> parseByString(cmd);
+	    return;
+	}
+
 	else if (cmd == "{")
 	{
-		if (counter && !dynamicBlockCounter)
-		{
-			m_collector->endBlock();
-			counter = 0;
-		}
-		dynamicBlockCounter++;
-		if (dynamicBlockCounter == 1)
-			m_collector->beginBlock();
+	    if (m_counter && !m_dynamicBlockCounter)
+	    {
+		m_collector->endBlock();
+		m_counter = 0;
+	    }
+	    m_dynamicBlockCounter++;
+	    if (m_dynamicBlockCounter == 1)
+		m_collector->beginBlock();
 
-		return;
+	    return;
 	}
 	else if (cmd == "}")
 	{
-		dynamicBlockCounter--;
-		counter = 0;
-		if (!dynamicBlockCounter)
-			m_collector->endBlock();
-		else if (dynamicBlockCounter < 0)
-			cout << "parse error! dynamic block unexpected end. Ignore it" << endl;
-		return;
+	    m_dynamicBlockCounter--;
+	    m_counter = 0;
+	    if (!m_dynamicBlockCounter)
+		m_collector->endBlock();
+	    else if (m_dynamicBlockCounter < 0)
+		cout << "parse error! dynamic block unexpected end. Ignore it" << endl;
+	    return;
 	}
 
-	if (!counter && !dynamicBlockCounter)
-		m_collector->beginBlock();
+	if (!m_counter && !m_dynamicBlockCounter)
+	    m_collector->beginBlock();
 
 	m_collector->addCmd(cmd);
-	counter++;
+	m_counter++;
 
-	if (counter == m_N && !dynamicBlockCounter)
+	if (m_counter == m_N && !m_dynamicBlockCounter)
 	{
-		m_collector->endBlock();
-		counter = 0;
+	    m_collector->endBlock();
+	    m_counter = 0;
 	}
 }
 
 void cmdParser::parseEnd()
 {
-	if (counter && !dynamicBlockCounter)
-		m_collector->endBlock();
-
-	counter = 0;
-	dynamicBlockCounter = 0;
+	if (m_counter && !m_dynamicBlockCounter)
+	    m_collector->endBlock();
+	m_counter = 0;
+	m_dynamicBlockCounter = 0;
 }

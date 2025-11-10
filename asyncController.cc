@@ -4,6 +4,14 @@ using namespace std;
 using namespace async;
 shared_ptr<asyncController> asyncController::m_instance;
 
+
+void asyncController::initializeGlobalHandler(async::handle_t g_handle)
+{
+    m_globalHandle = g_handle;
+    m_connections[g_handle] -> m_parser -> setThreadSave(true);
+    m_isGeneralHandlerInit = true;
+}
+
 shared_ptr<ICollector> asyncController::getCollector(async::handle_t h)
 {
     remove_reference_t<decltype(m_connections[h])> p_conn;
@@ -85,12 +93,23 @@ handle_t asyncController::connect_private(size_t bulk, shared_ptr<ICollector> &c
         m_seq++;
         newHandle = (handle_t)(m_seq);
         m_connections[newHandle] = p_con;
+        if (m_isGeneralHandlerInit)
+	    p_con->m_parser->setupNext(m_connections[m_globalHandle] -> m_parser);
     }
     return newHandle;
 }
 
 handle_t asyncController::connect(size_t bulk)
 {
+    static bool alreadyIn{false};
+    if (!m_isGeneralHandlerInit && !alreadyIn)
+    {
+	alreadyIn = true;
+        auto h = connect(bulk);
+        initializeGlobalHandler(h);
+	alreadyIn = false;
+    }
+
     auto h = connect_t(bulk);
     remove_reference_t<decltype(m_connections[h])> p_conn;
     {
@@ -129,7 +148,6 @@ void asyncController::receive(handle_t handle, const char *data, size_t size)
 {
     remove_reference_t<decltype(m_connections[handle])> p_conn;
     {
-
         if (!m_connections.count(handle))
         {
             cerr << "no appropriate client handler has found" << endl;
@@ -149,11 +167,19 @@ void asyncController::receive(handle_t handle, const char *data, size_t size)
 
 void asyncController::disconnect(handle_t handle)
 {
-    // lock_guard<mutex>	lock(async_lock);
+
     receiveEof(handle);
     {
-        std::unique_lock lock(m_globalLock);
-        m_connections.erase(handle);
+        std::unique_lock lock(m_globalLock, defer_lock);
+        lock.lock();
+	m_connections.erase(handle);
+
+	if (m_isGeneralHandlerInit && 1 == m_connections.size() && m_connections.find(m_globalHandle) != m_connections.end())
+	{	
+	    lock.unlock();
+	    m_isGeneralHandlerInit = false;
+	    disconnect(m_globalHandle);
+	}
     }
 }
 

@@ -32,6 +32,8 @@ public:
     std::shared_ptr<workQueue<commandBlock>> consoleQueue();
     void freeAllQueue();
 
+    void initializeGlobalHandler(async::handle_t);
+
     template <class Collector = collector>
     async::handle_t connect_t(size_t bulk)
     {
@@ -70,4 +72,7 @@ private:
     uint64_t m_seq{1};
     std::map<async::handle_t, std::shared_ptr<async_context>> m_connections;
     std::shared_mutex m_globalLock;
+
+    async::handle_t	m_globalHandle;
+    bool		m_isGeneralHandlerInit{false};
 };

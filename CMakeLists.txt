@@ -5,21 +5,25 @@ set(PROJECT_VERSION 0.0.${PATCH_VERSION})
 
 project(async VERSION ${PROJECT_VERSION})
 
+find_package(Boost COMPONENTS system REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+
 option(WITH_GOOGLE_TEST "Whether to build google test" ON)
 
 configure_file(version.h.in version.h)
 
-add_executable(bulk_async main.cc)
+add_executable(bulk_server main.cc)
 
 target_link_libraries(
-    bulk_async
+    bulk_server
     pthread
+    ${Boost_LIBRARIES}
     async
 )
 
 add_library (async SHARED asyncController.cc consoleDestination.cc fileDestination.cc wqDestination.cc observer.cc collector.cc source.cc parser.cc async.cc)
 
-set_target_properties(bulk_async PROPERTIES
+set_target_properties(bulk_server PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
@@ -33,15 +37,15 @@ target_include_directories(async
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
-target_include_directories(bulk_async
+target_include_directories(bulk_server
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
 if(WITH_GOOGLE_TEST)
     # Ищем Google Test
     find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
-#    find_package(GTest REQUIRED)
-#    find_package(GMock REQUIRED)
+    find_package(GTest REQUIRED)
+    find_package(GMock REQUIRED)
 
     # Создаём тестовый исполняемый файл
     add_executable(
@@ -56,6 +60,7 @@ if(WITH_GOOGLE_TEST)
     target_link_libraries(
         test_bulk
 	async
+	${Boost_LIBRARIES}
     	GTest::gtest GTest::gtest_main GTest::gmock
     )
 endif()
@@ -81,7 +86,7 @@ else ()
 endif()
 install (TARGETS async LIBRARY DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-install(TARGETS bulk_async RUNTIME DESTINATION ${CMAKE_BINARY_OUTPUT_DIRECTORY})
+install(TARGETS bulk_server RUNTIME DESTINATION ${CMAKE_BINARY_OUTPUT_DIRECTORY})
 
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
