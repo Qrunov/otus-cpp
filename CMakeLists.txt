@@ -45,7 +45,7 @@ if(WITH_GOOGLE_TEST)
     # Ищем Google Test
     find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
     find_package(GTest REQUIRED)
-    find_package(GMock REQUIRED)
+#    find_package(GMock REQUIRED)
 
     # Создаём тестовый исполняемый файл
     add_executable(
