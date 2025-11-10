@@ -43,7 +43,7 @@ target_include_directories(bulk_server
 
 if(WITH_GOOGLE_TEST)
     # Ищем Google Test
-    find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
+    find_package(GTest CONFIG REQUIRED COMPONENTS GTest)
     find_package(GTest REQUIRED)
 #    find_package(GMock REQUIRED)
 
@@ -61,7 +61,7 @@ if(WITH_GOOGLE_TEST)
         test_bulk
 	async
 	${Boost_LIBRARIES}
-    	GTest::gtest GTest::gtest_main GTest::gmock
+    	GTest::gtest GTest::gtest_main 
     )
 endif()
 
