@@ -18,7 +18,8 @@ void client_session(ba::ip::tcp::socket sock) {
 
 	    ba::streambuf b;
 	    ba::streambuf::mutable_buffers_type bufs = b.prepare(512);
-	    size_t n = sock.receive(bufs);
+	    boost::system::error_code ec;
+	    size_t n = sock.receive(bufs, 0, ec);
 	    b.commit(n);
 
 	    std::istream is(&b);
@@ -26,8 +27,15 @@ void client_session(ba::ip::tcp::socket sock) {
 	    while (!is.eof())
 	    {
 		is >> s;
-	        async::receive(h, s.c_str(), s.length());
+	        
+		async::receive(h, s.c_str(), s.length());
 		s = "";
+	    }
+	    if (ec)
+	    {
+		async::disconnect(h);
+		cout << "ïÛÉÂËÁ " << ec.message() << "\n";
+		break;
 	    }
         }
         catch (const std::exception &e) {
