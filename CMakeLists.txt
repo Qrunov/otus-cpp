@@ -42,47 +42,47 @@ target_include_directories(bulk_server
     PRIVATE "${CMAKE_BINARY_DIR}"
 )
 
-#if(WITH_GOOGLE_TEST)
+if(WITH_GOOGLE_TEST)
     # Ищем Google Test
-#    find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
-#    find_package(GTest REQUIRED)
-#    find_package(GMock REQUIRED)
+    find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
+    find_package(GTest REQUIRED)
+    find_package(GMock REQUIRED)
 
     # Создаём тестовый исполняемый файл
-#    add_executable(
-#      test_bulk
-#      test.cc)
+    add_executable(
+      test_bulk
+      test.cc)
 
-#    set_target_properties(test_bulk PROPERTIES
-#        CXX_STANDARD 20
-#        CXX_STANDARD_REQUIRED ON
-#    )
+    set_target_properties(test_bulk PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+    )
     # Подключаем gtest
-#    target_link_libraries(
-#        test_bulk
-#	async
-#    	GTest::gtest GTest::gtest_main GTest::gmock
-#    )
-#endif()
+    target_link_libraries(
+        test_bulk
+	async
+    	GTest::gtest GTest::gtest_main GTest::gmock
+    )
+endif()
 
 if (MSVC)
     target_compile_options(async PRIVATE
         /W4
     )
-#    if(WITH_BOOST_TEST)
-#        target_compile_options(test_bulk PRIVATE
-#            /W4
-#        )
-#    endif()
+    if(WITH_BOOST_TEST)
+        target_compile_options(test_bulk PRIVATE
+            /W4
+        )
+    endif()
 else ()
     target_compile_options(async PRIVATE
         -Wall -Wextra -pedantic -Werror
     )
-#    if(WITH_GOOGLE_TEST)
-#        target_compile_options(test_bulk PRIVATE
-#            -Wall -Wextra -pedantic -Werror
-#        )
-#    endif()
+    if(WITH_GOOGLE_TEST)
+        target_compile_options(test_bulk PRIVATE
+            -Wall -Wextra -pedantic -Werror
+        )
+    endif()
 endif()
 install (TARGETS async LIBRARY DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
