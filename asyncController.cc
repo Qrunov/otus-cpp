@@ -174,12 +174,12 @@ void asyncController::disconnect(handle_t handle)
         lock.lock();
 	m_connections.erase(handle);
 
-	if (m_isGeneralHandlerInit && 1 == m_connections.size() && m_connections.find(m_globalHandle) != m_connections.end())
-	{	
-	    lock.unlock();
-	    m_isGeneralHandlerInit = false;
-	    disconnect(m_globalHandle);
-	}
+//	if (m_isGeneralHandlerInit && 1 == m_connections.size() && m_connections.find(m_globalHandle) != m_connections.end())
+//	{	
+//	    lock.unlock();
+//	    m_isGeneralHandlerInit = false;
+//	    disconnect(m_globalHandle);
+//	}
     }
 }
 

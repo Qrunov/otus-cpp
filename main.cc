@@ -6,11 +6,73 @@
 
 #include <boost/asio.hpp>
 namespace ba = boost::asio;
+using boost::asio::ip::tcp;
 
 using namespace std;
 size_t 		N = 3;
 uint16_t	port = 9999;
 
+class session
+  : public std::enable_shared_from_this<session>
+{
+public:
+  session(tcp::socket socket)
+    : socket_(std::move(socket))
+  {
+  }
+
+  void start()
+  {
+    h = async::connect(N);
+    do_read();
+  }
+
+private:
+  void do_read()
+  {
+    auto self(shared_from_this());
+    socket_.async_read_some(boost::asio::buffer(data_, max_length),
+        [this, self](boost::system::error_code ec, std::size_t length)
+        {
+	  if (length)
+	  {
+	    strings << std::string{data_, length};
+
+	    std::string s;
+	    char c;
+	    while(strings.get(c))
+	    {
+		if ('\n' == c)
+		{
+    		    async::receive(h, s.c_str(), s.length());
+		    s = "";
+		}
+		else
+		    s += c;
+	    }
+	    strings << s;
+	  }
+          if (!ec)
+          {
+            //std::cout << "receive " << length << "=" << std::string{data_, length} << std::endl;
+            do_read();
+          }
+	  else
+	  {
+	    async::disconnect(h);
+	  }
+
+        });
+  }
+
+  tcp::socket socket_;
+  enum { max_length = 1024 };
+  char data_[max_length];
+  stringstream strings;
+  decltype(async::connect(N)) h;
+};
+
+/*
 void client_session(ba::ip::tcp::socket sock) {
     while (true) {
 	auto h = async::connect(N);
@@ -45,47 +107,57 @@ void client_session(ba::ip::tcp::socket sock) {
         }
     }
 }
+*/
+class server
+{
+public:
+  server(boost::asio::io_context& io_context, short port)
+    : acceptor_(io_context, tcp::endpoint(tcp::v4(), port))
+  {
+    do_accept();
+  }
+
+private:
+  void do_accept()
+  {
+    acceptor_.async_accept(
+        [this](boost::system::error_code ec, tcp::socket socket)
+        {
+          if (!ec)
+          {
+            std::make_shared<session>(std::move(socket))->start();
+          }
+
+          do_accept();
+        });
+  }
+
+  tcp::acceptor acceptor_;
+};
 
 
 int main(int argc, const char *argv[])
 {
-    try
+  try
+  {
+    if (argc != 3)
     {
-        if (argc == 3)
-	{
-	    port = strtoul(argv[1], 0, 10);
-            N = strtoul(argv[2], 0, 10);
-	}
-
-        ba::io_context io_context;
-	ba::ip::tcp::endpoint ep(
-	    ba::ip::tcp::v4(), 
-	    port
-	);
-	ba::ip::tcp::acceptor acc(io_context, ep);
-
-
-        while (true) 
-	{
-	    auto sock = ba::ip::tcp::socket(io_context);
-	    acc.accept(sock);
-	    std::thread(client_session, std::move(sock)).detach();
-	}
-
-/*        auto h = async::connect(N);
-        while (!cin.eof())
-        {
-            string oneLine;
-            cin >> oneLine;
-            async::receive(h, oneLine.c_str(), oneLine.length());
-        }
-
-
-        async::disconnect(h);*/
+      std::cerr << "Usage: bulk_async <port> <bulk_size>\n";
+      return 1;
     }
-    catch (const std::exception &e)
-    {
-        cerr << "Runtime error has occured:" << e.what() << " program has been terminated" << endl;
-    }
-    return 0;
+    N = std::atoi(argv[2]);
+
+    boost::asio::io_context io_context;
+
+    server server(io_context, std::atoi(argv[1]));
+
+    io_context.run();
+  }
+  catch (const std::exception& ex)
+  {
+    std::cerr << "Exception: " << ex.what() << "\n";
+  }
+
+  return 0;
+
 }
