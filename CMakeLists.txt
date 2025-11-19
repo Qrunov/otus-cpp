@@ -44,8 +44,8 @@ target_include_directories(bulk_server
 
 if(WITH_GOOGLE_TEST)
     # Ищем Google Test
-    find_package(GTest CONFIG REQUIRED COMPONENTS GTest )
-    find_package(GTest REQUIRED)
+    find_package(GTest CONFIG REQUIRED COMPONENTS GTest GMock)
+#    find_package(GTest REQUIRED)
 #    find_package(GMock REQUIRED)
 
     # Создаём тестовый исполняемый файл
@@ -58,10 +58,11 @@ if(WITH_GOOGLE_TEST)
         CXX_STANDARD_REQUIRED ON
     )
     # Подключаем gtest
+
     target_link_libraries(
         test_bulk
 	async
-    	GTest::gtest GTest::gtest_main 
+    	GTest::gtest GTest::gtest_main GTest::gmock
     )
 endif()
 
