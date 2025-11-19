@@ -53,6 +53,7 @@ if(WITH_GOOGLE_TEST)
         CXX_STANDARD_REQUIRED ON
     )
     # Подключаем gtest
+
     target_link_libraries(
         test_bulk
 	async
