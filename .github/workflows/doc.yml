@@ -7,7 +7,7 @@ on:
     branches:
       - master
       - feature/github_actions
-      - ex10/bulk_server
+      - ex11/join_server
 
 jobs:
   build-documentation:
