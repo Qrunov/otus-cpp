@@ -1,43 +1,13 @@
 #pragma once
+#include <vector>
 #include <string>
-#include <list>
-#include <memory>
+using opResult = std::vector<std::tuple<int, std::string, std::string>>;
 
-struct commandBlock
-{
-    time_t time;
-    std::list<std::string> cmd;
-};
-
-class ISource
+class IController
 {
 public:
-    virtual std::string getData() = 0;
-    virtual bool wasFinished() const = 0;
-};
-
-class observer
-{
-public:
-    virtual void update(const commandBlock &) = 0;
-};
-
-class ICollector
-{
-public:
-    virtual void beginBlock() = 0;
-    virtual void addCmd(const std::string &) = 0;
-    virtual void endBlock() = 0;
-};
-
-class subject
-{
-public:
-    void registration(const std::shared_ptr<observer>& ob);
-
-protected:
-    void notify(const commandBlock &b) const;
-
-private:
-    std::list<std::shared_ptr<observer>> m_observer_list;
+    virtual std::string truncate(std::string) = 0;
+    virtual std::string insert(std::string, int, std::string) = 0;
+    virtual std::pair<opResult, std::string> intersect(const std::string &, const std::string &) = 0;
+    virtual std::pair<opResult, std::string> symmetric_difference(const std::string &, const std::string &) = 0;
 };
