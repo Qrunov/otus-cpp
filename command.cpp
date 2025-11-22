@@ -9,7 +9,6 @@ void Command::execute(std::string cmd)
 	string word;
 	parse >> word;
 	opResult join;
-	cout << cmd << endl;
 	if ("TRUNCATE" == word)
 	{
 		word = "";
@@ -64,7 +63,6 @@ void Command::execute(std::string cmd)
 	}
 	else if ("SYMMETRIC_DIFFERENCE" == word)
 	{
-		cout << "!!!!!" << endl;
 		auto r = m_controller->symmetric_difference("A", "B");
 		if ("< OK" == r.second)
 			join = r.first;

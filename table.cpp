@@ -38,7 +38,7 @@ opResult Table::symmetric_difference(const Table &t) const
         if (it == t.m_table.end())
         {
         res.push_back(make_tuple(row1.first, row1.second, ""));
-                cout << row1.first << endl;
+
         }
             }
 

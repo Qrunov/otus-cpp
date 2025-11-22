@@ -38,7 +38,6 @@ public:
 private:
     void do_read()
     {
-        cout << "do_read enter" << endl;
         auto self(shared_from_this());
 
         boost::asio::async_read_until(socket_, input_buffer_, '\n',
@@ -54,7 +53,6 @@ private:
                 {
                     command.pop_back();
                 }
-                cout << "cmd: " << command << endl;   
                 cmd.execute(command);   
                 do_write();
                 
@@ -72,7 +70,6 @@ void do_write()
     boost::asio::async_write(socket_, boost::asio::buffer(*response),
                              [this, self, response](boost::system::error_code ec, std::size_t /*length*/)
                              {
-                                cout << "write answer" << endl;       
                                 if (!ec)
                                  {
                                     do_read();
