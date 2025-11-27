@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VERSION 0.1.${PATCH_VERSION})
 
-project(mapreducer VERSION ${PROJECT_VERSION})
+project(mapreduce VERSION ${PROJECT_VERSION})
 
 option(WITH_GOOGLE_TEST "Whether to build google test" ON)
 
