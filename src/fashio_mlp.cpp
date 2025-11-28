@@ -4,6 +4,7 @@
 #include <mlp_classifier.h>
 
 #include <helpers.h>
+#include <iostream>
 
 using namespace std;
 using namespace mnist;
