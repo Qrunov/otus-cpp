@@ -1,83 +1,37 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 
 set(PATCH_VERSION "1" CACHE INTERNAL "Patch version")
 set(PROJECT_VERSION 0.1.${PATCH_VERSION})
 
-project(mapreduce VERSION ${PROJECT_VERSION})
+project(fashio_mlp VERSION ${PROJECT_VERSION})
 
-option(WITH_GOOGLE_TEST "Whether to build google test" ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-configure_file(version.h.in version.h)
+set(CMAKE_CXX_STANDARD 17)
 
-add_executable(mapper mapper.cpp)
-add_executable(reducer1 reducer1.cpp)
-add_executable(reducer2 reducer2.cpp disp.cpp)
-
-
-set_target_properties(mapper PROPERTIES
-    CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
+find_package(Eigen3 REQUIRED)
+add_executable(fashio_mlp
+    src/fashio_mlp.cpp
+    src/fashio_mlp.cpp
+    src/helpers.cpp 
+    src/mlp_classifier.cpp
 )
 
-set_target_properties(reducer1 PROPERTIES
-    CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
-)
-
-set_target_properties(reducer2 PROPERTIES
-    CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
+target_include_directories(fashio_mlp PUBLIC
+    src
 )
 
 
-target_include_directories(reducer2
-    PRIVATE "${CMAKE_BINARY_DIR}"
+target_link_libraries(fashio_mlp PUBLIC
+    Eigen3::Eigen
 )
 
 
-if(WITH_GOOGLE_TEST)
-    # Ищем Google Test
-    find_package(GTest REQUIRED)
+install(TARGETS fashio_mlp RUNTIME DESTINATION ${CMAKE_BINARY_OUTPUT_DIRECTORY})
+install(FILES ${CMAKE_SOURCE_DIR}/data/w1.txt  DESTINATION share/ml)
+install(FILES ${CMAKE_SOURCE_DIR}/data/w2.txt  DESTINATION share/ml)
+install(FILES ${CMAKE_SOURCE_DIR}/data/test.csv DESTINATION share/ml)
 
-    # Создаём тестовый исполняемый файл
-    add_executable(
-      test_disp
-      test.cpp
-      disp.cpp)
-
-    set_target_properties(test_disp PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED ON
-    )
-    # Подключаем gtest
-    target_link_libraries(
-        test_disp
-    	GTest::GTest GTest::Main
-    )
-    target_compile_options(test_disp PRIVATE
-        -Wall -Wextra -pedantic -Werror
-    )
-
-endif()
-target_compile_options(mapper PRIVATE
-    -Wall -Wextra -pedantic -Werror
-)
-
-target_compile_options(reducer1 PRIVATE
-    -Wall -Wextra -pedantic -Werror
-)
-
-target_compile_options(reducer2 PRIVATE
-    -Wall -Wextra -pedantic -Werror
-)
-
-install(TARGETS mapper RUNTIME DESTINATION ${CMAKE_BINARY_OUTPUT_DIRECTORY})
-install(TARGETS reducer1 RUNTIME DESTINATION ${CMAKE_BINARY_OUTPUT_DIRECTORY})
-install(TARGETS reducer2 RUNTIME DESTINATION ${CMAKE_BINARY_OUTPUT_DIRECTORY})
-install(FILES ${CMAKE_SOURCE_DIR}/run_locally.sh DESTINATION bin/  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                    GROUP_READ GROUP_EXECUTE
-                    WORLD_READ WORLD_EXECUTE)
-install(FILES ${CMAKE_SOURCE_DIR}/input/AB_NYC_2019.csv  DESTINATION share/)
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
@@ -85,11 +39,3 @@ set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_PACKAGE_CONTACT example@example.com)
 include(CPack)
-
-if(WITH_GOOGLE_TEST)
-    enable_testing()
-    add_test(test_disp test_disp)
-endif()
-
-
-
