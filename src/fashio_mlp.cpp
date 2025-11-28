@@ -1,6 +1,4 @@
 #include <fstream>
-
-#include <gtest/gtest.h>
 #include <Eigen/Dense>
 
 #include <mlp_classifier.h>
