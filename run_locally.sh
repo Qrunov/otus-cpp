@@ -1,0 +1,10 @@
+#!/bin/sh
+BINARY_HOME=./
+INPUT_HOME=./input
+INPUT=${INPUT_HOME}/AB_NYC_2019.csv
+
+cat ${INPUT} | ${BINARY_HOME}/mapper | sort -k1 | ${BINARY_HOME}/reducer1 > output1
+cat output1
+
+cat ${INPUT} | ${BINARY_HOME}/mapper | sort -k1 | ${BINARY_HOME}/reducer2 > output2
+cat output2
